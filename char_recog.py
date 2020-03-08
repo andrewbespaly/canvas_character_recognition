@@ -81,6 +81,9 @@ drawing = False
 wasdrawing = False
 ready_to_submit = False
 
+fileInfo = char_separater.read_data_file('emnist-balanced-mapping.txt')
+
+
 # Main loop
 while quit == False:
     # grab the current frame
@@ -248,7 +251,14 @@ while quit == False:
 
     # 'Enter' while in drawing stage to turn in your letter/number and get result
     elif keyboard.is_pressed('enter') and trackingLive == True and ready_to_submit == True:
-        char_separater.separate_chars(canvas)
+        resultList = char_separater.separate_chars(canvas, fileInfo)
+        print(resultList)
+
+
+
+
+
+
 
 
 
