@@ -5,23 +5,26 @@ import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
 
 
-# import pandas as pd
+import pandas as pd
 
-# desired_width = 300
-# pd.set_option('display.width', desired_width)
-# np.set_printoptions(linewidth=desired_width)
+desired_width = 170
+pd.set_option('display.width', desired_width)
+np.set_printoptions(linewidth=desired_width, precision=3)
 
 
 def separate_chars(orig_frame):
 
-    saver = tf.train.import_meta_graph('mnist_model.meta')
+    # onedim_img = np.zeros((len(orig_frame), len(orig_frame[0])))
 
-    onedim_img = np.zeros((len(orig_frame), len(orig_frame[0])))
+    # print(orig_frame[0][0])
+    # if(len(orig_frame[0][0]) > 1):
+    #     for y in range(0, len(orig_frame[0])):
+    #         for x in range(0, len(orig_frame)):
+    #             onedim_img[x][y] = orig_frame[x][y][0]
+    # else:
+    #     onedim_img = orig_frame
 
-    for y in range(0, len(orig_frame[0])):
-        for x in range(0, len(orig_frame)):
-            onedim_img[x][y] = orig_frame[x][y][0]
-
+    onedim_img = orig_frame
 
     leftBounds = []
     rightBounds = []
@@ -104,7 +107,7 @@ def separate_chars(orig_frame):
     #             newChar[h-bottomBounds[char]][w-leftBounds[char]] = onedim_img[h][w]
     #     all_new_chars.append(newChar)
 
-    borderPad = 30
+    borderPad = 25
     for char in range(0, len(leftBounds)):
         wide = rightBounds[char] - leftBounds[char]
         tall = bottomBounds[char] - topBounds[char]
@@ -133,31 +136,34 @@ def separate_chars(orig_frame):
         smallCanvas = cv2.resize(newCanvas, (28, 28), interpolation=cv2.INTER_AREA)
         smallCanvas = np.round(smallCanvas)
 
-        cv2.imshow('t', newCanvas)
-        cv2.imshow('s', smallCanvas)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        # cv2.imshow('t', newCanvas)
+        # cv2.imshow('s', smallCanvas)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
 
-        #CONVERT SMALL CANVAS TO LOOK LIKE INPUT FOR MODEL
+        smallCanvas = smallCanvas.flatten()
+        smallCanvas = np.true_divide(smallCanvas, 255)
+        print(smallCanvas)
 
-        # with tf.Session() as sess:
-        #     saver = tf.train.import_meta_graph('mnist_model.meta')
-        #     saver.restore(sess, tf.train.latest_checkpoint('./'))
-        #     # print(sess.run('W1:0'))
-        #     graph = tf.get_default_graph()
-        #     w1 = graph.get_tensor_by_name("W1:0")
-        #     w2 = graph.get_tensor_by_name("W2:0")
-        #     feed_dict = {w1: , w2: }
+        with tf.Session() as sess:
+
+            saver = tf.train.import_meta_graph('mnist_model.meta')
+            saver.restore(sess, tf.train.latest_checkpoint('./'))
+            graph = tf.get_default_graph()
+            x = graph.get_tensor_by_name("x:0")
+            feed_dict = {x: [smallCanvas]}
+            y_ = graph.get_tensor_by_name("y_:0")
+            print(sess.run(tf.math.argmax(y_[0]), feed_dict))
+
 
 
 
 if __name__ == '__main__':
     goodtest = cv2.imread(r'chartest.png')
-    cv2.imshow('onedim', goodtest)
+    # cv2.imshow('onedim', goodtest)
     separate_chars(goodtest)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
-    # saver = tf.train.import_meta_graph('mnist_model.meta')
 
 
