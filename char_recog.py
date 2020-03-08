@@ -7,7 +7,8 @@ import cv2
 import colorsys
 import keyboard
 
-import train_recog
+import char_separater
+
 
 
 # FLAGS TO VISUALIZE TRACKING
@@ -20,9 +21,9 @@ default_thickness = 10
 default_color = (0,0,255)  # Red in BGR
 
 ####################################################
-desired_width = 300
+desired_width = 170
 pd.set_option('display.width', desired_width)
-np.set_printoptions(linewidth=desired_width)
+np.set_printoptions(linewidth=desired_width, precision=3)
 # lab_file = r'emnist-balanced-train-labels-idx1-ubyte'
 # img_file = r'emnist-balanced-train-images-idx3-ubyte'
 # labels = idx2numpy.convert_from_file(lab_file)
@@ -78,6 +79,7 @@ points = []
 quit = False
 drawing = False
 wasdrawing = False
+ready_to_submit = False
 
 # Main loop
 while quit == False:
@@ -197,7 +199,7 @@ while quit == False:
             if radius > 3:
                 # draw the circle and centroid on the frame,
                 cv2.circle(frame, (int(x), int(y)), int(radius), (255, 0, 0), 1)
-                cv2.circle(frame, center, 5, (0, 0, 255), -1)
+                cv2.circle(frame, center, default_thickness, (0, 0, 255), -1)
 
 
 
@@ -222,28 +224,31 @@ while quit == False:
     elif keyboard.is_pressed('e') and trackingLive == True:
         canvas = np.zeros_like(canvas)
         points.clear()
+        ready_to_submit = False
 
     # space to draw
     elif keyboard.is_pressed(' ') and trackingLive == True:
-        cv2.line(canvas, prevcenter[-2], prevcenter[-1], 255, 10)
+        ready_to_submit = True
+        cv2.line(canvas, prevcenter[-2], prevcenter[-1], 255, default_thickness)
         points.append(prevcenter[-1])
         drawing = True
         wasdrawing = False
+
+    elif keyboard.is_pressed('up'):
+        if default_thickness < 30:
+            default_thickness += 1
+
+    elif keyboard.is_pressed('down'):
+        if default_thickness > 1:
+            default_thickness -= 1
 
     elif wasdrawing == True:
         points.append((-100,-100))
         wasdrawing = False
 
     # 'Enter' while in drawing stage to turn in your letter/number and get result
-    elif keyboard.is_pressed('enter') and trackingLive == True:
-        product = cv2.resize(canvas, (28,28),interpolation=cv2.INTER_AREA)
-        product = np.round(product)
-        if(SHOW_PRODUCT == True):
-            cv2.imshow('product', product)
-            print(product)
-
-
-
+    elif keyboard.is_pressed('enter') and trackingLive == True and ready_to_submit == True:
+        char_separater.separate_chars(canvas)
 
 
 
