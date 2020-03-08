@@ -11,8 +11,18 @@ desired_width = 170
 pd.set_option('display.width', desired_width)
 np.set_printoptions(linewidth=desired_width, precision=3)
 
+def read_data_file(datafile):
+    file = open(datafile, 'r')
+    Lines = file.readlines()
+    listInfo = []
 
-def separate_chars(orig_frame):
+    for line in Lines:
+        listInfo.append(line.split())
+
+    # print(listInfo[10][1])
+    return listInfo
+
+def separate_chars(orig_frame, fileInfo):
 
     # onedim_img = np.zeros((len(orig_frame), len(orig_frame[0])))
 
@@ -108,6 +118,7 @@ def separate_chars(orig_frame):
     #     all_new_chars.append(newChar)
 
     borderPad = 25
+    resultList = []
     for char in range(0, len(leftBounds)):
         wide = rightBounds[char] - leftBounds[char]
         tall = bottomBounds[char] - topBounds[char]
@@ -143,19 +154,21 @@ def separate_chars(orig_frame):
 
         smallCanvas = smallCanvas.flatten()
         smallCanvas = np.true_divide(smallCanvas, 255)
-        print(smallCanvas)
+        # print(smallCanvas)
 
         with tf.Session() as sess:
 
-            saver = tf.train.import_meta_graph('mnist_model.meta')
+            saver = tf.train.import_meta_graph('emnist_balanced_model.meta')
             saver.restore(sess, tf.train.latest_checkpoint('./'))
             graph = tf.get_default_graph()
             x = graph.get_tensor_by_name("x:0")
             feed_dict = {x: [smallCanvas]}
             y_ = graph.get_tensor_by_name("y_:0")
-            print(sess.run(tf.math.argmax(y_[0]), feed_dict))
+            result = (sess.run(tf.math.argmax(y_[0]), feed_dict))
+            result = chr(int(fileInfo[result][1]))
+            resultList.append(result)
 
-
+    return resultList
 
 
 if __name__ == '__main__':
