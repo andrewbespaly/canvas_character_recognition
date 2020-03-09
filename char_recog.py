@@ -10,7 +10,6 @@ import keyboard
 import char_separater
 
 
-
 # FLAGS TO VISUALIZE TRACKING
 SHOW_MASK = True
 SHOW_CANVAS = True
@@ -80,6 +79,7 @@ quit = False
 drawing = False
 wasdrawing = False
 ready_to_submit = False
+string_to_present = ''
 
 fileInfo = char_separater.read_data_file('emnist-balanced-mapping.txt')
 
@@ -125,6 +125,8 @@ while quit == False:
     if trackingLive == True:
         colorSearch = False
         trackingLive = True
+
+        cv2.putText(frame, string_to_present, (round(len(frame[0])/2), 100), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 1)
 
         # define lower and upper bounds of color to track in hsv colorspace
         lowerColorBound = [track_color[0]-20, track_color[1]-50, track_color[2]-50]
@@ -228,6 +230,7 @@ while quit == False:
         canvas = np.zeros_like(canvas)
         points.clear()
         ready_to_submit = False
+        string_to_present = ''
 
     # space to draw
     elif keyboard.is_pressed(' ') and trackingLive == True:
@@ -252,14 +255,14 @@ while quit == False:
     # 'Enter' while in drawing stage to turn in your letter/number and get result
     elif keyboard.is_pressed('enter') and trackingLive == True and ready_to_submit == True:
         resultList = char_separater.separate_chars(canvas, fileInfo)
-        print(resultList)
+        string_to_present = ""
+        for i in range(0, len(resultList)):
+            string_to_present += resultList[i]
+            string_to_present += ' '
 
+        print(string_to_present)
 
-
-
-
-
-
-
+        # cv2.putText(frame, resultList[0], (70, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (10,10,10), 1)
+        # print(resultList)
 
 cv2.destroyAllWindows()
